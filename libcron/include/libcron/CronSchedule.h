@@ -6,7 +6,7 @@
 #pragma warning(push)
 #pragma warning(disable:4244)
 #endif
-#include <date/date.h>
+#include "../../date/include/date/date.h"
 #if defined(_MSC_VER)
 #pragma warning(pop)
 #endif
@@ -29,6 +29,9 @@ namespace libcron
 
             std::tuple<bool, std::chrono::system_clock::time_point>
             calculate_from(const std::chrono::system_clock::time_point& from) const;
+
+            bool
+            check(const std::chrono::system_clock::time_point& curr) const;
 
             // https://github.com/HowardHinnant/date/wiki/Examples-and-Recipes#obtaining-ymd-hms-components-from-a-time_point
             static DateTime to_calendar_time(std::chrono::system_clock::time_point time)

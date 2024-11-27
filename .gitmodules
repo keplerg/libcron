@@ -4,3 +4,6 @@
 [submodule "test/externals/Catch2"]
 	path = test/externals/Catch2
 	url = https://github.com/catchorg/Catch2.git
+[submodule "daTE"]
+	path = daTE
+	url = https://github.com/HowardHinnant/date.git

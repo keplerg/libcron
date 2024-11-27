@@ -28,8 +28,8 @@ namespace libcron
                 curr = s;
                 date_changed = true;
             }
-                // If all days are allowed (or the field is ignored via '?'), then the 'day of week' takes precedence.
-            else if (data.get_day_of_month().size() != CronData::value_of(DayOfMonth::Last))
+            // If all days are allowed (or the field is ignored via '?'), then the 'day of week' takes precedence.
+            if (data.get_day_of_month().size() != CronData::value_of(DayOfMonth::Last))
             {
                 // Add days until one of the allowed days are found, or stay at the current one.
                 if (data.get_day_of_month().find(static_cast<DayOfMonth>(unsigned(ymd.day()))) ==
@@ -41,7 +41,7 @@ namespace libcron
                     date_changed = true;
                 }
             }
-            else
+            if (data.get_day_of_week().size() != CronData::value_of(DayOfWeek::Last))
             {
                 //Add days until the current weekday is one of the allowed weekdays
                 year_month_weekday ymw = date::floor<days>(curr);
@@ -92,5 +92,53 @@ namespace libcron
         curr -= curr.time_since_epoch() % seconds{1};
 
         return std::make_tuple(max_iterations > 0, curr);
+    }
+
+    bool
+    CronSchedule::check(const std::chrono::system_clock::time_point& curr) const
+    {
+        year_month_day ymd = date::floor<days>(curr);
+
+        // Add months until one of the allowed days are found, or stay at the current one.
+        if (data.get_months().find(static_cast<Months>(unsigned(ymd.month()))) == data.get_months().end())
+        {
+            return false;
+        }
+        // If all days are allowed (or the field is ignored via '?'), then the 'day of week' takes precedence.
+        if (data.get_day_of_month().size() != CronData::value_of(DayOfMonth::Last))
+        {
+            // Add days until one of the allowed days are found, or stay at the current one.
+            if (data.get_day_of_month().find(static_cast<DayOfMonth>(unsigned(ymd.day()))) ==
+                data.get_day_of_month().end())
+            {
+                return false;
+            }
+        }
+        if (data.get_day_of_week().size() != CronData::value_of(DayOfWeek::Last))
+        {
+            //Add days until the current weekday is one of the allowed weekdays
+            year_month_weekday ymw = date::floor<days>(curr);
+
+            if (data.get_day_of_week().find(static_cast<DayOfWeek>(ymw.weekday().c_encoding())) ==
+                data.get_day_of_week().end())
+            {
+                return false;
+            }
+        }
+
+        auto date_time = to_calendar_time(curr);
+        if (data.get_hours().find(static_cast<Hours>(date_time.hour)) == data.get_hours().end())
+        {
+            return false;
+        }
+        else if (data.get_minutes().find(static_cast<Minutes >(date_time.min)) == data.get_minutes().end())
+        {
+            return false;
+        }
+        else if (data.get_seconds().find(static_cast<Seconds>(date_time.sec)) == data.get_seconds().end())
+        {
+            return false;
+        }
+        return true;
     }
 }
